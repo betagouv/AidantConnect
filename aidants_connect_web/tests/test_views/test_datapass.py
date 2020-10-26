@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core import mail
 from django.test import tag, TestCase
 from aidants_connect_web.models import Organisation
 from aidants_connect_web.views import datapass
@@ -60,4 +61,16 @@ class Datapass(TestCase):
 
             self.assertEqual(response.status_code, 400)
 
+    def test_good_data_creates_email(self):
+        self.client.post(
+            "/datapass_receiver/",
+            data=self.good_data_from_datapass,
+            **{"HTTP_AUTHORIZATION": self.datapass_key},
+        )
 
+        self.assertEqual(len(mail.outbox), 1)
+        email = mail.outbox[0]
+        self.assertEqual(email.subject, "Une nouvelle structure")
+        self.assertIn("La maison de l'aide", email.body)
+        self.assertIn(settings.DATAPASS_FROM_EMAIL, email.from_email)
+        self.assertIn(settings.DATAPASS_TO_EMAIL, email.to)

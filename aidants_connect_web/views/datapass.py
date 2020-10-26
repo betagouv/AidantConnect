@@ -48,4 +48,18 @@ def receiver(request):
         log.info(f"{e} @ datapass")
         return HttpResponseBadRequest()
 
+    send_mail(
+        subject="Une nouvelle structure",
+        message=f"""
+            la structure {this_organisation.name} vient
+            d'être validée pour avoir des accès à Aidants Connect.
+            ###
+            Vous pouvez consulter la demande sur :
+            https://datapass.api.gouv.fr/aidantsconnect/{parameters["data_pass_id"]}
+        """,
+        from_email=settings.DATAPASS_FROM_EMAIL,
+        recipient_list=[settings.DATAPASS_TO_EMAIL],
+        fail_silently=False,
+    )
+
     return HttpResponse(status=202)
